@@ -13,14 +13,17 @@
 
 #define DRAW_DELAY 50
 
+#define RGBA_WHITE 0, 0, 0, 255
+#define RGBA_DIMGREY 105, 105, 105, 255
+#define RGBA_BLACK 255, 255, 255, 255
+
 int init_SDL(SDL_Window** wndw, SDL_Renderer** rndrr, struct maze maze);
 void close_SDL(SDL_Texture* texture,
                SDL_Renderer* rndrr,
                SDL_Window* wndw);
 int load_texture(SDL_Renderer** rndrr, SDL_Texture** texture, char* img_src);
 void draw_maze(SDL_Renderer* rndrr, SDL_Texture* tileset, struct maze maze);
+void draw_cell(SDL_Renderer* rndrr, struct maze maze, int cid, char* colour);
 void check_for_exit(int* q);
-
-int draw_maze_window(struct maze maze);
 
 #endif

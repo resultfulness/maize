@@ -81,6 +81,24 @@ void draw_maze(SDL_Renderer *rndrr, SDL_Texture* tileset, struct maze maze) {
     }
 }
 
+void draw_cell(SDL_Renderer *rndrr, struct maze maze, int cid, char *colour) {
+    int x, y;
+    x = (cid % maze.size) * TILE_SIZE;
+    y = (cid / maze.size) * TILE_SIZE;
+
+    SDL_Rect rect = { x, y, TILE_SIZE, TILE_SIZE };
+
+    if (strcmp(colour, "white") == 0) {
+        SDL_SetRenderDrawColor(rndrr, RGBA_WHITE);
+    } else if (strcmp(colour, "grey") == 0) {
+        SDL_SetRenderDrawColor(rndrr, RGBA_DIMGREY);
+    } else {
+        SDL_SetRenderDrawColor(rndrr, RGBA_BLACK);
+    }
+
+    SDL_RenderFillRect(rndrr, &rect);
+}
+
 void check_for_exit(int* q) {
     SDL_Event e;
     while (SDL_PollEvent(&e) != 0) {

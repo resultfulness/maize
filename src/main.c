@@ -13,7 +13,7 @@
 
 int main(int argc, char** argv) {
     srand(time(NULL));
-    int skip_drw = 0;
+    int skip_gen = 0;
 
     /* procesowanie argumentów wywołania */
     if (argc < 2) {
@@ -33,8 +33,8 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
     if (argc == 3) {
-        if (strcmp(argv[2], "-q") == 0 || strcmp(argv[2], "--quick") == 0) {
-            skip_drw = 1;
+        if (strcmp(argv[2], "-s") == 0 || strcmp(argv[2], "--skip-gen") == 0) {
+            skip_gen = 1;
         } else {
             fprintf(stderr,
                     "%s: niepoprawny argument: %s\n"
@@ -45,7 +45,6 @@ int main(int argc, char** argv) {
             return EXIT_FAILURE;
         }
     }
-
     if (strcmp(argv[1], "--help") == 0) {
         print_help(argv[0]);
         return EXIT_SUCCESS;
@@ -73,7 +72,7 @@ int main(int argc, char** argv) {
 
     /* definicje zmiennych do algorytmu */
     struct cell* cells = maze->cells;
-    int cid, x, y;
+    int cid;
     cid = get_rnd_cell(*maze);
     cells[cid].in_maze = 1;
 
@@ -94,9 +93,11 @@ int main(int argc, char** argv) {
 
     /* generowanie labiryntu */
     while (are_all_cells_filled(*maze)) {
-        SDL_SetRenderDrawColor(rndrr, 0, 0, 0, 255);
-        SDL_RenderClear(rndrr);
-        draw_maze(rndrr, tileset, *maze);
+        if (!skip_gen) {
+            SDL_SetRenderDrawColor(rndrr, 0, 0, 0, 255);
+            SDL_RenderClear(rndrr);
+            draw_maze(rndrr, tileset, *maze);
+        }
 
         /* komórka startowa */
         do {
@@ -117,29 +118,20 @@ int main(int argc, char** argv) {
             int cell_already_walked = stck_search(pstack, adjcid) == 1; 
             if (cell_already_walked) { 
                 while ((cid = stck_pop(pstack)) != adjcid) {
-                    x = (cid % maze->size) * TILE_SIZE;
-                    y = (cid / maze->size) * TILE_SIZE;
-
-                    SDL_Rect rect = { x, y, TILE_SIZE, TILE_SIZE };
-
-                    SDL_SetRenderDrawColor(rndrr, 0, 0, 0, 255);
-                    SDL_RenderFillRect(rndrr, &rect);
+                    if (!skip_gen)
+                        draw_cell(rndrr, *maze, cid, "white");
                 }
             }
 
             stck_push(pstack, adjcid);
 
-            x = (adjcid % maze->size) * TILE_SIZE;
-            y = (adjcid / maze->size) * TILE_SIZE;
+            if (!skip_gen) {
+                draw_cell(rndrr, *maze, adjcid, "grey");
 
-            SDL_Rect rect = { x, y, TILE_SIZE, TILE_SIZE };
-
-            SDL_SetRenderDrawColor(rndrr, 33, 33, 33, 255);
-            SDL_RenderFillRect(rndrr, &rect);
-
-            SDL_RenderPresent(rndrr);
-            draw_maze(rndrr, tileset, *maze);
-            SDL_Delay(DRAW_DELAY);
+                SDL_RenderPresent(rndrr);
+                draw_maze(rndrr, tileset, *maze);
+                SDL_Delay(DRAW_DELAY);
+            }
         }
 
         /* aktualizacja labiryntu o nową ścieżkę */
