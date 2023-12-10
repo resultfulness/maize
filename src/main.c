@@ -13,6 +13,7 @@
 
 int main(int argc, char** argv) {
     srand(time(NULL));
+    int skip_drw = 0;
 
     /* procesowanie argumentów wywołania */
     if (argc < 2) {
@@ -22,6 +23,27 @@ int main(int argc, char** argv) {
                 argv[0],
                 argv[0]);
         return EXIT_FAILURE;
+    }
+    if (argc > 3) {
+        fprintf(stderr,
+                "%s: zbyt dużo argumentów\n"
+                "w celu uzyskania więcej informacji wpisz '%s --help'\n",
+                argv[0],
+                argv[0]);
+        return EXIT_FAILURE;
+    }
+    if (argc == 3) {
+        if (strcmp(argv[2], "-q") == 0 || strcmp(argv[2], "--quick") == 0) {
+            skip_drw = 1;
+        } else {
+            fprintf(stderr,
+                    "%s: niepoprawny argument: %s\n"
+                    "w celu uzyskania więcej informacji wpisz '%s --help'\n",
+                    argv[0],
+                    argv[2],
+                    argv[0]);
+            return EXIT_FAILURE;
+        }
     }
 
     if (strcmp(argv[1], "--help") == 0) {
