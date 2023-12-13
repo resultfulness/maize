@@ -11,9 +11,6 @@ int stck_push(struct pathstack* stack, int val) {
     n->next = stack->head;
     stack->head = n;
 
-    if (stack->tail == NULL)
-        stack->tail = n;
-
     return 0;
 }
 
