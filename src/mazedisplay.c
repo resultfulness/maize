@@ -88,8 +88,8 @@ void draw_cell(SDL_Renderer *rndrr, struct maze maze, int cid, char *colour) {
 
     SDL_Rect rect = { x, y, TILE_SIZE, TILE_SIZE };
 
-    if (strcmp(colour, "white") == 0) {
-        SDL_SetRenderDrawColor(rndrr, RGBA_WHITE);
+    if (strcmp(colour, "black") == 0) {
+        SDL_SetRenderDrawColor(rndrr, RGBA_BLACK);
     } else if (strcmp(colour, "grey") == 0) {
         SDL_SetRenderDrawColor(rndrr, RGBA_DIMGREY);
     } else {
