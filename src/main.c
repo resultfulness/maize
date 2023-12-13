@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
         /* aktualizacja labiryntu o nową ścieżkę */
         int prevcid = -1;
         while ((cid = stck_pop(pstack)) != -1) {
-            cells[cid].in_maze = 1;
+            cells[cid].in_maze = true;
             if (prevcid == -1) { 
                 prevcid = cid;
                 continue;

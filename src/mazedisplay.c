@@ -69,7 +69,7 @@ void draw_maze(SDL_Renderer *rndrr, SDL_Texture* tileset, struct maze maze) {
     int i;
     for (i = 0; i < maze.ccnt; i++) {
         struct cell c = maze.cells[i];
-        if (c.in_maze != 1)
+        if (!c.in_maze)
             continue;
         const int src_offset_x = (c.adjacents % 4) * TILE_SIZE;
         const int src_offset_y = (c.adjacents / 4) * TILE_SIZE;

@@ -58,7 +58,7 @@ int get_adj_cell(struct maze maze, int cid, enum direction d) {
 int are_all_cells_filled(struct maze maze) {
     int i;
     for (i = 0; i < maze.ccnt; i++) {
-        if (maze.cells[i].in_maze == 0)
+        if (!maze.cells[i].in_maze)
             return 1;
     }
     return 0;
