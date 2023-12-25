@@ -99,17 +99,18 @@ void draw_cell(SDL_Renderer *rndrr, struct maze maze, int cid, char *colour) {
     SDL_RenderFillRect(rndrr, &rect);
 }
 
-void check_for_exit(int* q) {
+int userexit() {
     SDL_Event e;
     while (SDL_PollEvent(&e) != 0) {
         if (e.type == SDL_QUIT) {
-            *q = 1;
+            return 1;
         } else if (e.type == SDL_KEYDOWN) {
             if (e.key.keysym.sym == SDLK_ESCAPE ||
                 e.key.keysym.sym == SDLK_q) {
-                *q = 1;
+                return 1;
             }
         }
     }
+    return 0;
 }
 

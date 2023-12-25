@@ -14,7 +14,7 @@
 
 int main(int argc, char** argv) {
     srand(time(NULL));
-    int skip_gen = 0;
+    bool skip_gen = false;
 
     /* procesowanie argumentów wywołania */
     if (argc < 2) {
@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
     }
     if (argc == 3) {
         if (strcmp(argv[2], "-s") == 0 || strcmp(argv[2], "--skip-gen") == 0) {
-            skip_gen = 1;
+            skip_gen = true;
         } else {
             fprintf(stderr,
                     "%s: niepoprawny argument: %s\n"
@@ -126,6 +126,10 @@ int main(int argc, char** argv) {
 
             stck_push(pstack, adjcid);
 
+            if (userexit()) {
+                close_SDL(tileset, rndrr, wndw);
+                return EXIT_SUCCESS;
+            }
             if (!skip_gen) {
                 draw_cell(rndrr, *maze, adjcid, "grey");
 
@@ -139,7 +143,7 @@ int main(int argc, char** argv) {
         int prevcid = -1;
         while ((cid = stck_pop(pstack)) != -1) {
             cells[cid].in_maze = true;
-            if (prevcid == -1) { 
+            if (prevcid == -1) {
                 prevcid = cid;
                 continue;
             }
@@ -152,14 +156,15 @@ int main(int argc, char** argv) {
     maze->adjacency_list = malloc(maze->ccnt * sizeof(struct adjacency));
     init_mazeadj(maze);
 
-    /* komórka początkowa i końcowa */
-    cells[0].adjacents += N;
-    cells[maze->ccnt - 1].adjacents += S;
+    int startcid = rand() % maze->size;
+    cells[startcid].adjacents += N;
+    int endcid = maze->ccnt - rand() % maze->size - 1;
+    cells[endcid].adjacents += S;
 
-    int quit = 0;
-    while (!quit) {
-        check_for_exit(&quit);
-        
+    while (true) {
+        if (userexit())
+            break;
+
         SDL_SetRenderDrawColor(rndrr, RGBA_BLACK);
 
         SDL_RenderClear(rndrr);

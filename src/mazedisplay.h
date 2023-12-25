@@ -24,6 +24,6 @@ void close_SDL(SDL_Texture* texture,
 int load_texture(SDL_Renderer** rndrr, SDL_Texture** texture, char* img_src);
 void draw_maze(SDL_Renderer* rndrr, SDL_Texture* tileset, struct maze maze);
 void draw_cell(SDL_Renderer* rndrr, struct maze maze, int cid, char* colour);
-void check_for_exit(int* q);
+int userexit();
 
 #endif
