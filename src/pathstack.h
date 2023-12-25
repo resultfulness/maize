@@ -8,7 +8,6 @@ struct node {
 
 struct pathstack {
     struct node* head;
-    struct node* tail;
 };
 
 int stck_push(struct pathstack* stack, int val);

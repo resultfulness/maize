@@ -3,7 +3,7 @@ PROJECT = maize
 CC     = cc
 CFLAGS = -std=c99 -pedantic -Wall
 LDLIBS = -lSDL2 -lSDL2_image
-SRCDIR  = ./src
+SRCDIR   = ./src
 BUILDDIR = ./build
 
 OBJECTS = $(patsubst %.c,%.o,$(wildcard $(SRCDIR)/*.c))
@@ -21,6 +21,6 @@ dir:
 	@mkdir -p $(BUILDDIR)
 
 clean:
-	@rm -rf $(BUILDDIR)
+	@rm -rf $(BUILDDIR) $(PROJECT)
 
 .PHONY: all clean dir

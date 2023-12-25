@@ -69,7 +69,7 @@ void draw_maze(SDL_Renderer *rndrr, SDL_Texture* tileset, struct maze maze) {
     int i;
     for (i = 0; i < maze.ccnt; i++) {
         struct cell c = maze.cells[i];
-        if (c.in_maze != 1)
+        if (!c.in_maze)
             continue;
         const int src_offset_x = (c.adjacents % 4) * TILE_SIZE;
         const int src_offset_y = (c.adjacents / 4) * TILE_SIZE;
@@ -88,8 +88,8 @@ void draw_cell(SDL_Renderer *rndrr, struct maze maze, int cid, char *colour) {
 
     SDL_Rect rect = { x, y, TILE_SIZE, TILE_SIZE };
 
-    if (strcmp(colour, "white") == 0) {
-        SDL_SetRenderDrawColor(rndrr, RGBA_WHITE);
+    if (strcmp(colour, "black") == 0) {
+        SDL_SetRenderDrawColor(rndrr, RGBA_BLACK);
     } else if (strcmp(colour, "grey") == 0) {
         SDL_SetRenderDrawColor(rndrr, RGBA_DIMGREY);
     } else {

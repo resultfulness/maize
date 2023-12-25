@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -74,7 +75,7 @@ int main(int argc, char** argv) {
     struct cell* cells = maze->cells;
     int cid;
     cid = get_rnd_cell(*maze);
-    cells[cid].in_maze = 1;
+    cells[cid].in_maze = true;
 
     enum direction d;
     struct pathstack* pstack = malloc(sizeof(struct pathstack));
@@ -119,7 +120,7 @@ int main(int argc, char** argv) {
             if (cell_already_walked) {
                 while ((cid = stck_pop(pstack)) != adjcid) {
                     if (!skip_gen)
-                        draw_cell(rndrr, *maze, cid, "white");
+                        draw_cell(rndrr, *maze, cid, "black");
                 }
             }
 
@@ -137,7 +138,7 @@ int main(int argc, char** argv) {
         /* aktualizacja labiryntu o nową ścieżkę */
         int prevcid = -1;
         while ((cid = stck_pop(pstack)) != -1) {
-            cells[cid].in_maze = 1;
+            cells[cid].in_maze = true;
             if (prevcid == -1) { 
                 prevcid = cid;
                 continue;
@@ -156,11 +157,11 @@ int main(int argc, char** argv) {
     cells[maze->ccnt - 1].adjacents += S;
 
     int quit = 0;
-
     while (!quit) {
         check_for_exit(&quit);
+        
+        SDL_SetRenderDrawColor(rndrr, RGBA_BLACK);
 
-        SDL_SetRenderDrawColor(rndrr, 0, 0, 0, 255);
         SDL_RenderClear(rndrr);
 
         draw_maze(rndrr, tileset, *maze);

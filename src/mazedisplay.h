@@ -13,9 +13,9 @@
 
 #define DRAW_DELAY 50
 
-#define RGBA_WHITE 0, 0, 0, 255
+#define RGBA_WHITE 255, 255, 255, 255
 #define RGBA_DIMGREY 105, 105, 105, 255
-#define RGBA_BLACK 255, 255, 255, 255
+#define RGBA_BLACK 0, 0, 0, 255
 
 int init_SDL(SDL_Window** wndw, SDL_Renderer** rndrr, struct maze maze);
 void close_SDL(SDL_Texture* texture,

@@ -4,10 +4,10 @@
 #include "maze.h"
 
 enum direction {
-    N = 8,
-    E = 4,
-    S = 2,
-    W = 1
+    N = 8, /* 0b1000 */
+    E = 4, /* 0b0100 */
+    S = 2, /* 0b0010 */
+    W = 1  /* 0b0001 */
 };
 #define DIRECTION_COUNT 4
 #define DIRECTION_BASE_MASK N+E+S+W

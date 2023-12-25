@@ -1,8 +1,10 @@
 #ifndef _MAZE_H
 #define _MAZE_H
 
+#include <stdbool.h>
+
 struct cell {
-    unsigned int in_maze : 1;
+    bool in_maze;
     unsigned int adjacents : 4;
 };
 
