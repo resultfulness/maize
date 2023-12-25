@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 #include "mazegen.h"
 
 enum direction delta2dir(struct maze maze, int cid1, int cid2) {
@@ -64,7 +66,37 @@ int are_all_cells_filled(struct maze maze) {
     return 0;
 }
 
-int adj_to_adjlist(struct maze *maze) {
-    return 1;
+
+int count_b1s(int n) {
+    int cnt = 0;
+    while (n != 0) {
+        n &= (n - 1);
+        cnt++;
+    }
+    return cnt;
+}
+
+int init_mazeadj(struct maze* maze) {
+    int cid, j, k, adjs, len;
+
+    for (cid = 0; cid < maze->ccnt; cid++) {
+        adjs = maze->cells[cid].adjacents;
+        len = count_b1s(adjs);
+
+        maze->adjacency_list[cid].length = len;
+        maze->adjacency_list[cid].cell_ids = malloc(len * sizeof(int));
+        if (maze->adjacency_list[cid].cell_ids == NULL)
+            return 1;
+
+        k = 0;
+        for (j = 0; j < DIRECTION_COUNT; j++) {
+            if (((adjs >> j) & 1) == 0)
+                continue;
+            enum direction d = 1 << j;
+            maze->adjacency_list[cid].cell_ids[k++] =
+                get_adj_cell(*maze, cid, d);
+        }
+    }
+
     return 0;
 }

@@ -6,11 +6,16 @@ struct cell {
     unsigned int adjacents : 4;
 };
 
+struct adjacency {
+    int* cell_ids;
+    int length;
+};
+
 struct maze {
     int size;
     int ccnt;
     struct cell* cells;
-    int** adjacency_list;
+    struct adjacency* adjacency_list;
 };
 
 int maze_init(struct maze* maze, char* mazesize);

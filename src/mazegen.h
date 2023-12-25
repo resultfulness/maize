@@ -34,4 +34,7 @@ int get_cell_allow_dirs(struct maze maze, int cid);
 int get_adj_cell(struct maze maze, int cid, enum direction d);
 int are_all_cells_filled(struct maze maze);
 
+int count_b1s(int n);
+int init_mazeadj(struct maze* maze);
+
 #endif
