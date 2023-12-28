@@ -34,7 +34,8 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
     if (argc == 3) {
-        if (strcmp(argv[2], "-s") == 0 || strcmp(argv[2], "--skip-gen") == 0) {
+        if (strcmp(argv[2], "-s") == 0 ||
+            strcmp(argv[2], "--skip-gen-drawing") == 0) {
             skip_gen = true;
         } else {
             fprintf(stderr,
