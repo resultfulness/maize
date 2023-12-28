@@ -52,6 +52,7 @@ int main(int argc, char** argv) {
         return EXIT_SUCCESS;
     }
 
+    /* inicjalizacja struktur i zmiennych */
     struct maze* maze = malloc(sizeof(struct maze));
     if (maze == NULL) {
         fprintf(stderr, "%s: nie udało się alokować pamięci\n", argv[0]);
@@ -71,8 +72,6 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-
-    /* definicje zmiennych do algorytmu */
     struct cell* cells = maze->cells;
     int cid;
     cid = get_rnd_cell(*maze);
@@ -93,11 +92,10 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    /* generowanie labiryntu */
+    /* algorytm generowania labiryntu */
     while (are_all_cells_filled(*maze)) {
         if (!skip_gen) {
-            SDL_SetRenderDrawColor(rndrr, 0, 0, 0, 255);
-            SDL_RenderClear(rndrr);
+            clear_wndw(rndrr);
             draw_maze(rndrr, tileset, *maze);
         }
 
@@ -129,6 +127,9 @@ int main(int argc, char** argv) {
 
             if (userexit()) {
                 close_SDL(tileset, rndrr, wndw);
+                free(maze->cells);
+                free(maze);
+                free(pstack);
                 return EXIT_SUCCESS;
             }
             if (!skip_gen) {
@@ -154,24 +155,52 @@ int main(int argc, char** argv) {
         }
     }
 
+    /* konwersja na listę sąsiedztwa */
     maze->adjacency_list = malloc(maze->ccnt * sizeof(struct adjacency));
-    init_mazeadj(maze);
+    if (maze->adjacency_list == NULL) {
+        fprintf(stderr, "%s: nie udało się alokować pamięci\n", argv[0]);
+        return EXIT_FAILURE;
+    }
+    if (init_mazeadj(maze) != 0) {
+        fprintf(stderr,
+                "%s: wystąpił błąd podczas tworzenia listy sąsiedztwa\n",
+                argv[0]);
+        return EXIT_FAILURE;
+    }
 
     int startcid = rand() % maze->size;
     cells[startcid].adjacents += N;
     int endcid = maze->ccnt - rand() % maze->size - 1;
     cells[endcid].adjacents += S;
 
-    while (true) {
-        if (userexit())
-            break;
+    /* rozwiązywanie labiryntu algorytmem DFS */
+    while (stck_pop(pstack) != -1)
+        ;
 
-        SDL_SetRenderDrawColor(rndrr, RGBA_BLACK);
+    stck_push(pstack, startcid);
 
-        SDL_RenderClear(rndrr);
-
+    while (stck_preview(pstack) != -1) {
+        cid = stck_pop(pstack);
+        if (!maze->adjacency_list[cid].visited) {
+            maze->adjacency_list[cid].visited = true;
+            for (int i = 0; i < maze->adjacency_list[cid].length; i++) {
+                int adjcid = maze->adjacency_list[cid].cell_ids[i];
+                stck_push(pstack, adjcid);
+            }
+        }
+        clear_wndw(rndrr);
         draw_maze(rndrr, tileset, *maze);
+        SDL_RenderPresent(rndrr);
+        SDL_Delay(DRAW_DELAY);
 
+        if (maze->adjacency_list[endcid].visited)
+            break;
+    }
+
+    /* wyświetlanie końcowe */
+    while (!userexit()) {
+        clear_wndw(rndrr);
+        draw_maze(rndrr, tileset, *maze);
         SDL_RenderPresent(rndrr);
     }
 

@@ -41,7 +41,7 @@ int init_SDL(SDL_Window** wndw, SDL_Renderer** rndrr, struct maze maze) {
     return 0;
 }
 
-void close_SDL(SDL_Texture *texture, SDL_Renderer *rndrr, SDL_Window *wndw) {
+void close_SDL(SDL_Texture* texture, SDL_Renderer* rndrr, SDL_Window* wndw) {
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(rndrr);
     SDL_DestroyWindow(wndw);
@@ -65,7 +65,12 @@ int load_texture(SDL_Renderer** rndrr, SDL_Texture** texture, char* img_src) {
     return 0;
 }
 
-void draw_maze(SDL_Renderer *rndrr, SDL_Texture* tileset, struct maze maze) {
+void clear_wndw(SDL_Renderer* rndrr) {
+    SDL_SetRenderDrawColor(rndrr, RGBA_BLACK);
+    SDL_RenderClear(rndrr);
+}
+
+void draw_maze(SDL_Renderer* rndrr, SDL_Texture* tileset, struct maze maze) {
     int i;
     for (i = 0; i < maze.ccnt; i++) {
         struct cell c = maze.cells[i];

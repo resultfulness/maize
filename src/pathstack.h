@@ -14,6 +14,5 @@ int stck_push(struct pathstack* stack, int val);
 int stck_pop(struct pathstack* stack);
 int stck_preview(struct pathstack* stack);
 int stck_search(struct pathstack* stack, int val);
-int stck_len(struct pathstack* stack);
 
 #endif

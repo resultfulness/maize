@@ -11,6 +11,7 @@ struct cell {
 struct adjacency {
     int* cell_ids;
     int length;
+    bool visited;
 };
 
 struct maze {

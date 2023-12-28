@@ -83,6 +83,7 @@ int init_mazeadj(struct maze* maze) {
         adjs = maze->cells[cid].adjacents;
         len = count_b1s(adjs);
 
+        maze->adjacency_list[cid].visited = false;
         maze->adjacency_list[cid].length = len;
         maze->adjacency_list[cid].cell_ids = malloc(len * sizeof(int));
         if (maze->adjacency_list[cid].cell_ids == NULL)
