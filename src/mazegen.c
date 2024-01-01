@@ -66,6 +66,20 @@ int are_all_cells_filled(struct maze maze) {
     return 0;
 }
 
+void update_maze(struct maze* maze, struct pathstack* pstack) {
+    int cid, prevcid;
+    prevcid = -1;
+    while ((cid = stck_pop(pstack)) != -1) {
+        maze->cells[cid].in_maze = true;
+        if (prevcid == -1) {
+            prevcid = cid;
+            continue;
+        }
+        maze->cells[cid].adjacents += delta2dir(*maze, cid, prevcid);
+        maze->cells[prevcid].adjacents += delta2dir(*maze, prevcid, cid);
+        prevcid = cid;
+    }
+}
 
 int count_b1s(int n) {
     int cnt = 0;

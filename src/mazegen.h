@@ -2,6 +2,7 @@
 #define _MAZEGEN_H
 
 #include "maze.h"
+#include "pathstack.h"
 
 enum direction {
     N = 8, /* 0b1000 */
@@ -33,6 +34,7 @@ int get_cell_allow_dirs(struct maze maze, int cid);
  */
 int get_adj_cell(struct maze maze, int cid, enum direction d);
 int are_all_cells_filled(struct maze maze);
+void update_maze(struct maze* maze, struct pathstack* pstack);
 
 int count_b1s(int n);
 int init_mazeadj(struct maze* maze);

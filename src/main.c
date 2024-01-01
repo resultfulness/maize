@@ -10,6 +10,7 @@
 #include "maze.h"
 #include "mazedisplay.h"
 #include "mazegen.h"
+#include "mazesolve.h"
 #include "pathstack.h"
 
 int main(int argc, char** argv) {
@@ -103,7 +104,10 @@ int main(int argc, char** argv) {
         do {
             cid = get_rnd_cell(*maze);
         } while (cells[cid].in_maze);
-        stck_push(pstack, cid);
+        if (stck_push(pstack, cid) != 0) {
+            fprintf(stderr, "%s: nie udało się alokować pamięci\n", argv[0]);
+            return EXIT_FAILURE;
+        }
 
         /* ścieżka z komórki startowej do dowolnej w labiryncie */
         while (!cells[stck_preview(pstack)].in_maze) {
@@ -123,7 +127,12 @@ int main(int argc, char** argv) {
                 }
             }
 
-            stck_push(pstack, adjcid);
+            if (stck_push(pstack, adjcid) != 0) {
+                fprintf(stderr,
+                        "%s: nie udało się alokować pamięci\n",
+                        argv[0]);
+                return EXIT_FAILURE;
+            }
 
             if (userexit()) {
                 close_SDL(tileset, rndrr, wndw);
@@ -142,17 +151,7 @@ int main(int argc, char** argv) {
         }
 
         /* aktualizacja labiryntu o nową ścieżkę */
-        int prevcid = -1;
-        while ((cid = stck_pop(pstack)) != -1) {
-            cells[cid].in_maze = true;
-            if (prevcid == -1) {
-                prevcid = cid;
-                continue;
-            }
-            cells[cid].adjacents += delta2dir(*maze, cid, prevcid);
-            cells[prevcid].adjacents += delta2dir(*maze, prevcid, cid);
-            prevcid = cid;
-        }
+        update_maze(maze, pstack);
     }
 
     /* konwersja na listę sąsiedztwa */
@@ -176,18 +175,17 @@ int main(int argc, char** argv) {
     /* rozwiązywanie labiryntu algorytmem DFS */
     while (stck_pop(pstack) != -1)
         ;
-
-    stck_push(pstack, startcid);
+    if (stck_push(pstack, startcid) != 0) {
+        fprintf(stderr, "%s: nie udało się alokować pamięci\n", argv[0]);
+        return EXIT_FAILURE;
+    }
 
     while (stck_preview(pstack) != -1) {
-        cid = stck_pop(pstack);
-        if (!maze->adjacency_list[cid].visited) {
-            maze->adjacency_list[cid].visited = true;
-            for (int i = 0; i < maze->adjacency_list[cid].length; i++) {
-                int adjcid = maze->adjacency_list[cid].cell_ids[i];
-                stck_push(pstack, adjcid);
-            }
+        if (visit_top_node(pstack, *maze) != 0) {
+            fprintf(stderr, "%s: nie udało się alokować pamięci\n", argv[0]);
+            return EXIT_FAILURE;
         }
+
         clear_wndw(rndrr);
         draw_maze(rndrr, tileset, *maze);
         SDL_RenderPresent(rndrr);
