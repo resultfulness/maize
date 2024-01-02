@@ -17,9 +17,17 @@ int stck_push(struct pathstack* stack, int val) {
 int stck_pop(struct pathstack* stack) {
     if (stack->head == NULL)
         return -1;
-    const int val = stack->head->val;
-    stack->head = stack->head->next;
+
+    struct node* prev_head = stack->head;
+    const int val = prev_head->val;
+    stack->head = prev_head->next;
+    free(prev_head);
     return val;
+}
+
+void stck_clear(struct pathstack *stack) {
+    while (stck_pop(stack) != -1)
+        ;
 }
 
 int stck_preview(struct pathstack* stack) {

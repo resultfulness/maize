@@ -14,7 +14,7 @@
 #include "pathstack.h"
 
 int main(int argc, char** argv) {
-    srand(time(NULL));
+    int result = 0;
     bool skip_gen = false;
 
     /* procesowanie argumentów wywołania */
@@ -24,7 +24,8 @@ int main(int argc, char** argv) {
                 "w celu uzyskania więcej informacji wpisz '%s --help'\n",
                 argv[0],
                 argv[0]);
-        return EXIT_FAILURE;
+        result = 1;
+        goto out_nofree;
     }
     if (argc > 3) {
         fprintf(stderr,
@@ -32,7 +33,8 @@ int main(int argc, char** argv) {
                 "w celu uzyskania więcej informacji wpisz '%s --help'\n",
                 argv[0],
                 argv[0]);
-        return EXIT_FAILURE;
+        result = 1;
+        goto out_nofree;
     }
     if (argc == 3) {
         if (strcmp(argv[2], "-s") == 0 ||
@@ -45,19 +47,21 @@ int main(int argc, char** argv) {
                     argv[0],
                     argv[2],
                     argv[0]);
-            return EXIT_FAILURE;
+            result = 1;
+            goto out_nofree;
         }
     }
     if (strcmp(argv[1], "--help") == 0) {
         print_help(argv[0]);
-        return EXIT_SUCCESS;
+        goto out_nofree;
     }
 
     /* inicjalizacja struktur i zmiennych */
     struct maze* maze = malloc(sizeof(struct maze));
     if (maze == NULL) {
         fprintf(stderr, "%s: nie udało się alokować pamięci\n", argv[0]);
-        return EXIT_FAILURE;
+        result = 1;
+        goto out_nofree;
     }
     if(maze_init(maze, argv[1]) != 0) {
         fprintf(stderr,
@@ -65,32 +69,43 @@ int main(int argc, char** argv) {
                 "otrzymano '%s'\n",
                 argv[0],
                 argv[1]);
-        return EXIT_FAILURE;
+        result = 1;
+        goto out_free_maze;
     }
     maze->cells = calloc(maze->ccnt, sizeof(struct cell));
     if (maze->cells == NULL) {
         fprintf(stderr, "%s: nie udało się alokować pamięci\n", argv[0]);
-        return EXIT_FAILURE;
+        result = 1;
+        goto out_free_maze;
     }
+
+    srand(time(NULL));
 
     struct cell* cells = maze->cells;
     int cid;
+    /* początkowo dodajemy losową komórkę do labiryntu */
     cid = get_rnd_cell(*maze);
     cells[cid].in_maze = true;
 
     enum direction d;
     struct pathstack* pstack = malloc(sizeof(struct pathstack));
+    if (pstack == NULL) {
+        fprintf(stderr, "%s: nie udało się alokować pamięci", argv[0]);
+        result = 1;
+        goto out_free_cells;
+    }
 
     /* inicjalizacja okna */
     SDL_Window* wndw = NULL;
     SDL_Renderer* rndrr = NULL;
     SDL_Texture* tileset = NULL;
     if (init_SDL(&wndw, &rndrr, *maze) != 0) {
-        return EXIT_FAILURE;
+        result = 1;
+        goto out_free_pstack;
     }
     if (load_texture(&rndrr, &tileset, TILESET_SRC) != 0) {
-        close_SDL(tileset, rndrr, wndw);
-        return EXIT_FAILURE;
+        result = 1;
+        goto out_free_SDL;
     }
 
     /* algorytm generowania labiryntu */
@@ -106,7 +121,8 @@ int main(int argc, char** argv) {
         } while (cells[cid].in_maze);
         if (stck_push(pstack, cid) != 0) {
             fprintf(stderr, "%s: nie udało się alokować pamięci\n", argv[0]);
-            return EXIT_FAILURE;
+            result = 1;
+            goto out_free_SDL;
         }
 
         /* ścieżka z komórki startowej do dowolnej w labiryncie */
@@ -131,16 +147,13 @@ int main(int argc, char** argv) {
                 fprintf(stderr,
                         "%s: nie udało się alokować pamięci\n",
                         argv[0]);
-                return EXIT_FAILURE;
+                result = 1;
+                goto out_free_SDL;
             }
 
-            if (userexit()) {
-                close_SDL(tileset, rndrr, wndw);
-                free(maze->cells);
-                free(maze);
-                free(pstack);
-                return EXIT_SUCCESS;
-            }
+            if (userexit())
+                goto out_free_SDL;
+
             if (!skip_gen) {
                 draw_cell(rndrr, *maze, adjcid, "grey");
 
@@ -155,16 +168,18 @@ int main(int argc, char** argv) {
     }
 
     /* konwersja na listę sąsiedztwa */
-    maze->adjacency_list = malloc(maze->ccnt * sizeof(struct adjacency));
-    if (maze->adjacency_list == NULL) {
+    struct adj* adjlist = malloc(maze->ccnt * sizeof(struct adj));
+    if (adjlist == NULL) {
         fprintf(stderr, "%s: nie udało się alokować pamięci\n", argv[0]);
-        return EXIT_FAILURE;
+        result = 1;
+        goto out_free_SDL;
     }
-    if (init_mazeadj(maze) != 0) {
+    if (adjlist_init(adjlist, maze) != 0) {
         fprintf(stderr,
                 "%s: wystąpił błąd podczas tworzenia listy sąsiedztwa\n",
                 argv[0]);
-        return EXIT_FAILURE;
+        result = 1;
+        goto out_free_adjlist;
     }
 
     int startcid = rand() % maze->size;
@@ -173,17 +188,18 @@ int main(int argc, char** argv) {
     cells[endcid].adjacents += S;
 
     /* rozwiązywanie labiryntu algorytmem DFS */
-    while (stck_pop(pstack) != -1)
-        ;
+    stck_clear(pstack);
     if (stck_push(pstack, startcid) != 0) {
         fprintf(stderr, "%s: nie udało się alokować pamięci\n", argv[0]);
-        return EXIT_FAILURE;
+        result = 1;
+        goto out_free_adjlist;
     }
 
     while (stck_preview(pstack) != -1) {
-        if (visit_top_node(pstack, *maze) != 0) {
+        if (visit_top_node(pstack, adjlist) != 0) {
             fprintf(stderr, "%s: nie udało się alokować pamięci\n", argv[0]);
-            return EXIT_FAILURE;
+            result = 1;
+            goto out_free_adjlist;
         }
 
         clear_wndw(rndrr);
@@ -191,7 +207,7 @@ int main(int argc, char** argv) {
         SDL_RenderPresent(rndrr);
         SDL_Delay(DRAW_DELAY);
 
-        if (maze->adjacency_list[endcid].visited)
+        if (adjlist[endcid].visited)
             break;
     }
 
@@ -202,13 +218,26 @@ int main(int argc, char** argv) {
         SDL_RenderPresent(rndrr);
     }
 
-    /* czyszczenie */
-    free(maze->adjacency_list);
-    free(maze->cells);
-    free(maze);
-    free(pstack);
+out_free_adjlist:
+    for (int i = 0; i < maze->ccnt; i++) {
+        if (adjlist[i].cell_ids)
+            free(adjlist[i].cell_ids);
+    }
+    free(adjlist);
 
+out_free_SDL:
     close_SDL(tileset, rndrr, wndw);
 
-    return EXIT_SUCCESS;
+out_free_pstack:
+    stck_clear(pstack);
+    free(pstack);
+
+out_free_cells:
+    free(maze->cells);
+
+out_free_maze:
+    free(maze);
+
+out_nofree:
+    return result;
 }

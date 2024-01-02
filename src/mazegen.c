@@ -1,5 +1,3 @@
-#include <stdlib.h>
-
 #include "mazegen.h"
 
 enum direction delta2dir(struct maze maze, int cid1, int cid2) {
@@ -33,7 +31,7 @@ int dir2delta(struct maze maze, enum direction d) {
     return delta;
 }
 
-int get_cell_allow_dirs(struct maze maze, int cid) {
+int get_adj_cell(struct maze maze, int cid, enum direction d) {
     int mask = DIRECTION_BASE_MASK;
 
     if (cid < maze.size)
@@ -45,11 +43,7 @@ int get_cell_allow_dirs(struct maze maze, int cid) {
     if (cid % maze.size == maze.size - 1)
         mask -= E;
 
-    return mask;
-}
-
-int get_adj_cell(struct maze maze, int cid, enum direction d) {
-    d &= get_cell_allow_dirs(maze, cid);
+    d &= mask;
 
     if (d == 0)
         return -1;
@@ -79,39 +73,4 @@ void update_maze(struct maze* maze, struct pathstack* pstack) {
         maze->cells[prevcid].adjacents += delta2dir(*maze, prevcid, cid);
         prevcid = cid;
     }
-}
-
-int count_b1s(int n) {
-    int cnt = 0;
-    while (n != 0) {
-        n &= (n - 1);
-        cnt++;
-    }
-    return cnt;
-}
-
-int init_mazeadj(struct maze* maze) {
-    int cid, j, k, adjs, len;
-
-    for (cid = 0; cid < maze->ccnt; cid++) {
-        adjs = maze->cells[cid].adjacents;
-        len = count_b1s(adjs);
-
-        maze->adjacency_list[cid].visited = false;
-        maze->adjacency_list[cid].length = len;
-        maze->adjacency_list[cid].cell_ids = malloc(len * sizeof(int));
-        if (maze->adjacency_list[cid].cell_ids == NULL)
-            return 1;
-
-        k = 0;
-        for (j = 0; j < DIRECTION_COUNT; j++) {
-            if (((adjs >> j) & 1) == 0)
-                continue;
-            enum direction d = 1 << j;
-            maze->adjacency_list[cid].cell_ids[k++] =
-                get_adj_cell(*maze, cid, d);
-        }
-    }
-
-    return 0;
 }
