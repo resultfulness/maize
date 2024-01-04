@@ -12,14 +12,14 @@ struct node {
     struct node* next;
 };
 
-/* struct pathstack - stos wykorzystywany w zapisie ścieżek zarówno w
- * generowaniu, jak i rozwiązywaniu labiryntu
+/* struct pathstack - stos wykorzystywany w zapisie ścieżek w generowaniu
+ * labiryntu
  *
  * Stos przystosowany jest do przechowywania liczb całkowitych >= 0, takich jak
  * id komórek w labiryncie.
  *
  * Pola:
- *   - struct node* head: element na górze stosu (najpóźniej dodany)
+ *   - struct node* head: element na górze stosu (ostatnio dodany)
  */
 struct pathstack {
     struct node* head;

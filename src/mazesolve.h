@@ -4,19 +4,22 @@
 #include "maze.h"
 #include "mazegen.h"
 #include "pathstack.h"
+#include "queue.h"
 
-/* struct adj - reprezentuje pojedynczy element (komórkę) listy
- * sąsiedztwa
+/* struct adj - reprezentuje pojedynczy element (komórkę) listy sąsiedztwa
  *
  * Pola:
  *   - int* cell_ids: lista id sąsiadujących komórek
  *   - int length: długość listy sąsiadujących komórek
+ *   - int parent: komórka z której 'wszedł' do komórki algorytm rozwiązywania
+ *   labiryntu
  *   - bool visited: czy dana komórka została już rozpatrzona przez algorytm
- *   rozwiązywania algorytmu
+ *   rozwiązywania labiryntu
  */
 struct adj {
     int* cell_ids;
     int length;
+    int parent;
     bool visited;
 };
 
@@ -45,18 +48,20 @@ int count_b1s(int n);
  */
 int adjlist_init(struct adj* adjlist, struct maze* maze);
 
-/* visit_top_node - odwiedza górę stosu, usuwając ją ze stosu, oznaczając
- * komórkę jako odwiedzoną, i dodając wszystkie sąsiadujące komórki na stos
+/* bfs_visit_adj - część algorytmu rozwiązywującego labirynt. Odwiedza wszystkie
+ * komórki sąsiądujące z podaną, które nie zostały jeszcze odwiedzone,
+ * ustawiając ich pole `parent` na podaną. Następnie dodaje je do kolejki
+ * do sprawdzenia później
  *
  * Argumenty:
- *   - struct pathstack* pstack: wskaźnik na stos
- *   - struct adj* adjlist: lista sąsiedztwa, w której oznaczane są odwiedzenia i z
- *   której pobierane są sąsiadujące komórki
+ *   - int cid: komórka, której nieodwiedzeni sąsiedzi zostaną odwiedzeni
+ *   - struct queue* queue: kolejka w której zapisani zostaną sąsiedzi
+ *   - struct adj* adjlist: lista sąsiedztwa, w której działa algorytm
  *
- * Zwraca:
- *   - 0 jeśli poprawnie dodano sąsiadujące komórki na stos
- *   - 1 jeśli wystąpił błąd w dodawaniu komórek na stos
+ * Zwraca int:
+ *   - 0 jeśli poprawnie przeprowadzono odwiedzenie
+ *   - 1 jeśli wystąpił błąd alokacji podczas dodawania sąsiadów do kolejki
  */
-int visit_top_node(struct pathstack* pstack, struct adj* adjlist);
+int bfs_visit_adj(int cid, struct queue* queue, struct adj* adjlist);
 
 #endif

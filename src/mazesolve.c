@@ -19,6 +19,7 @@ int adjlist_init(struct adj* adjlist, struct maze* maze) {
         len = count_b1s(adjs);
 
         adjlist[cid].visited = false;
+        adjlist[cid].parent = -1;
         adjlist[cid].length = len;
         adjlist[cid].cell_ids = malloc(len * sizeof(int));
         if (adjlist[cid].cell_ids == NULL)
@@ -37,13 +38,13 @@ int adjlist_init(struct adj* adjlist, struct maze* maze) {
     return 0;
 }
 
-int visit_top_node(struct pathstack* pstack, struct adj* adjlist) {
-    int cid = stck_pop(pstack);
-    if (!adjlist[cid].visited) {
-        adjlist[cid].visited = true;
-        for (int i = 0; i < adjlist[cid].length; i++) {
-            int adjcid = adjlist[cid].cell_ids[i];
-            if (stck_push(pstack, adjcid) != 0)
+int bfs_visit_adj(int cid, struct queue* queue, struct adj* adjlist) {
+    for (int i = 0; i < adjlist[cid].length; i++) {
+        int adjcid = adjlist[cid].cell_ids[i];
+        if (!adjlist[adjcid].visited) {
+            adjlist[adjcid].visited = true;
+            adjlist[adjcid].parent = cid;
+            if (queue_enqueue(queue, adjcid) != 0)
                 return 1;
         }
     }

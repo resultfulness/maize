@@ -12,6 +12,7 @@
 #include "mazegen.h"
 #include "mazesolve.h"
 #include "pathstack.h"
+#include "queue.h"
 
 int main(int argc, char** argv) {
     int result = 0;
@@ -83,7 +84,7 @@ int main(int argc, char** argv) {
 
     struct cell* cells = maze->cells;
     int cid;
-    /* początkowo dodajemy losową komórkę do labiryntu */
+    /* początkowo do labiryntu dodana zostaje losowa komórka */
     cid = get_rnd_cell(*maze);
     cells[cid].in_maze = true;
 
@@ -137,9 +138,10 @@ int main(int argc, char** argv) {
 
             int cell_already_walked = stck_search(pstack, adjcid) == 1;
             if (cell_already_walked) {
+                SDL_SetRenderDrawColor(rndrr, COLOUR_BACKGROUND);
                 while ((cid = stck_pop(pstack)) != adjcid) {
                     if (!skip_gen)
-                        draw_cell(rndrr, *maze, cid, "black");
+                        draw_cell(rndrr, *maze, cid);
                 }
             }
 
@@ -155,7 +157,8 @@ int main(int argc, char** argv) {
                 goto out_free_SDL;
 
             if (!skip_gen) {
-                draw_cell(rndrr, *maze, adjcid, "grey");
+                SDL_SetRenderDrawColor(rndrr, COLOUR_GENERATION_PATH);
+                draw_cell(rndrr, *maze, adjcid);
 
                 SDL_RenderPresent(rndrr);
                 draw_maze(rndrr, tileset, *maze);
@@ -187,36 +190,51 @@ int main(int argc, char** argv) {
     int endcid = maze->ccnt - rand() % maze->size - 1;
     cells[endcid].adjacents += S;
 
-    /* rozwiązywanie labiryntu algorytmem DFS */
-    stck_clear(pstack);
-    if (stck_push(pstack, startcid) != 0) {
+    /* rozwiązywanie labiryntu algorytmem BFS */
+    struct queue* queue = malloc(sizeof(struct queue));
+    if (queue == NULL) {
         fprintf(stderr, "%s: nie udało się alokować pamięci\n", argv[0]);
         result = 1;
         goto out_free_adjlist;
     }
+    queue->head = NULL;
+    queue->tail = NULL;
 
-    while (stck_preview(pstack) != -1) {
-        if (visit_top_node(pstack, adjlist) != 0) {
-            fprintf(stderr, "%s: nie udało się alokować pamięci\n", argv[0]);
-            result = 1;
-            goto out_free_adjlist;
-        }
+    adjlist[startcid].parent = startcid - maze->size;
+    adjlist[startcid].visited = true;
+    if (queue_enqueue(queue, startcid) != 0) {
+        fprintf(stderr, "%s: nie udało się alokować pamięci\n", argv[0]);
+        result = 1;
+        goto out_free_queue;
+    }
+
+    while ((cid = queue_dequeue(queue)) != -1) {
+        if (cid == endcid)
+            break;
+        /* dopóki kolejka nie jest pusta lub napotkana komórka jest końcowa */
+
+        bfs_visit_adj(cid, queue, adjlist);
 
         clear_wndw(rndrr);
         draw_maze(rndrr, tileset, *maze);
+        draw_visited(rndrr, *maze, adjlist);
         SDL_RenderPresent(rndrr);
         SDL_Delay(DRAW_DELAY);
-
-        if (adjlist[endcid].visited)
-            break;
+        if (userexit())
+            goto out_free_queue;
     }
 
     /* wyświetlanie końcowe */
     while (!userexit()) {
         clear_wndw(rndrr);
         draw_maze(rndrr, tileset, *maze);
+        draw_solution(rndrr, *maze, adjlist, endcid);
         SDL_RenderPresent(rndrr);
+        SDL_Delay(DRAW_DELAY);
     }
+
+out_free_queue:
+    free(queue);
 
 out_free_adjlist:
     for (int i = 0; i < maze->ccnt; i++) {

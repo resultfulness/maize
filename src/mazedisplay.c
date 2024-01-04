@@ -66,13 +66,12 @@ int load_texture(SDL_Renderer** rndrr, SDL_Texture** texture, char* img_src) {
 }
 
 void clear_wndw(SDL_Renderer* rndrr) {
-    SDL_SetRenderDrawColor(rndrr, RGBA_BLACK);
+    SDL_SetRenderDrawColor(rndrr, COLOUR_BACKGROUND);
     SDL_RenderClear(rndrr);
 }
 
 void draw_maze(SDL_Renderer* rndrr, SDL_Texture* tileset, struct maze maze) {
-    int i;
-    for (i = 0; i < maze.ccnt; i++) {
+    for (int i = 0; i < maze.ccnt; i++) {
         struct cell c = maze.cells[i];
         if (!c.in_maze)
             continue;
@@ -86,20 +85,12 @@ void draw_maze(SDL_Renderer* rndrr, SDL_Texture* tileset, struct maze maze) {
     }
 }
 
-void draw_cell(SDL_Renderer *rndrr, struct maze maze, int cid, char *colour) {
+void draw_cell(SDL_Renderer *rndrr, struct maze maze, int cid) {
     int x, y;
     x = (cid % maze.size) * TILE_SIZE;
     y = (cid / maze.size) * TILE_SIZE;
 
     SDL_Rect rect = { x, y, TILE_SIZE, TILE_SIZE };
-
-    if (strcmp(colour, "black") == 0) {
-        SDL_SetRenderDrawColor(rndrr, RGBA_BLACK);
-    } else if (strcmp(colour, "grey") == 0) {
-        SDL_SetRenderDrawColor(rndrr, RGBA_DIMGREY);
-    } else {
-        SDL_SetRenderDrawColor(rndrr, RGBA_BLACK);
-    }
 
     SDL_RenderFillRect(rndrr, &rect);
 }
@@ -119,3 +110,55 @@ int userexit() {
     return 0;
 }
 
+SDL_Rect get_con_rect(int cid1, int cid2, struct maze maze) {
+    int x = (cid1 % maze.size) * TILE_SIZE + (TILE_SIZE - LINE_SIZE)/2;
+    int y = (cid1 / maze.size) * TILE_SIZE + (TILE_SIZE - LINE_SIZE)/2;
+    int w = LINE_SIZE;
+    int h = LINE_SIZE;
+    enum direction d = delta2dir(maze, cid1, cid2);
+
+    if (d == N) {
+        y -= TILE_SIZE;
+        h += TILE_SIZE;
+    }
+    if (d == E) {
+        w += TILE_SIZE;
+    }
+    if (d == S) {
+        h += TILE_SIZE;
+    }
+    if (d == W) {
+        x -= TILE_SIZE;
+        w += TILE_SIZE;
+    }
+
+    return (SDL_Rect) { x, y, w, h };
+}
+
+void draw_visited(SDL_Renderer* rndrr, struct maze maze, struct adj* adjlist) {
+    SDL_SetRenderDrawColor(rndrr, COLOUR_SOLVING_PATH);
+    for (int i = 0; i < maze.ccnt; i++) {
+        if (!adjlist[i].visited)
+            continue;
+
+        const SDL_Rect r = get_con_rect(i, adjlist[i].parent, maze);
+        SDL_RenderFillRect(rndrr, &r);
+    }
+}
+
+void draw_solution(SDL_Renderer* rndrr,
+                   struct maze maze,
+                   struct adj* adjlist,
+                   int endcid) {
+    struct adj cell;
+    SDL_SetRenderDrawColor(rndrr, COLOUR_FINAL_SOLUTION);
+
+    const SDL_Rect r = get_con_rect(endcid + maze.size, endcid, maze);
+    SDL_RenderFillRect(rndrr, &r);
+
+    do {
+        cell = adjlist[endcid];
+        const SDL_Rect r = get_con_rect(endcid, cell.parent, maze);
+        SDL_RenderFillRect(rndrr, &r);
+    } while ((endcid = cell.parent) >= 0);
+}

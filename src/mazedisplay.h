@@ -5,6 +5,8 @@
 #include <SDL2/SDL_image.h>
 
 #include "maze.h"
+#include "mazegen.h"
+#include "mazesolve.h"
 
 #define WIN_TITLE "Maize 🌽"
 
@@ -12,15 +14,28 @@
  * pobieranej z tilesetu */
 #define TILE_SIZE 16
 
+/* LINE_SIZE - rozmiar linii pokazywanych podczas rozwiązywania labiryntu
+ */
+#define LINE_SIZE 8
+
+/* ścieżka do tilesetu labiryntu */
 #define RES_DIR "res"
-#define TILESET_SRC RES_DIR"/maze_tileset.png"
+#define TILESET_SRC RES_DIR "/maze_tileset.png"
 
 /* DRAW_DELAY - określa odstęp w czasie między klatkami */
 #define DRAW_DELAY 50
 
+/* kolory wykorzystywane przez program */
 #define RGBA_WHITE 255, 255, 255, 255
 #define RGBA_DIMGREY 105, 105, 105, 255
 #define RGBA_BLACK 0, 0, 0, 255
+#define RGBA_ORANGERED 255, 69, 0, 255
+#define RGBA_FORESTGREEN 34, 139, 34, 255
+
+#define COLOUR_BACKGROUND RGBA_BLACK
+#define COLOUR_GENERATION_PATH RGBA_DIMGREY
+#define COLOUR_SOLVING_PATH RGBA_ORANGERED
+#define COLOUR_FINAL_SOLUTION RGBA_FORESTGREEN
 
 /* init_SDL - inicjalizuje okno biblioteki SDL o rozmiarze na podstawie rozmiaru
  * labiryntu
@@ -34,7 +49,7 @@
  *   - 0 jeśli poprawnie zainicjalizowano okno
  *   - 1 jeśli wystąpił problem z inicjalizacją
  * */
-int init_SDL(SDL_Window** wndw, SDL_Renderer** rndrr, struct maze maze);
+int init_SDL(SDL_Window **wndw, SDL_Renderer **rndrr, struct maze maze);
 
 /* close_SDL - zamyka uchwyty do biblioteki SDL
  *
@@ -43,9 +58,7 @@ int init_SDL(SDL_Window** wndw, SDL_Renderer** rndrr, struct maze maze);
  *   - SDL_Renderer* rndrr: wskaźnik na renderer do zamknięcia
  *   - SDL_Window* wndw: wskaźnik na okno do zamknięcia
  */
-void close_SDL(SDL_Texture* texture,
-               SDL_Renderer* rndrr,
-               SDL_Window* wndw);
+void close_SDL(SDL_Texture *texture, SDL_Renderer *rndrr, SDL_Window *wndw);
 
 /* load_texture - pobiera obraz z systemu plików do wykorzystania przez SDL jako
  * tekstura
@@ -60,15 +73,15 @@ void close_SDL(SDL_Texture* texture,
  *   - 0 jeśli poprawnie załadowano teksturę
  *   - 1 jeśli wystąpił błąd ładowania obrazu
  */
-int load_texture(SDL_Renderer** rndrr, SDL_Texture** texture, char* img_src);
+int load_texture(SDL_Renderer **rndrr, SDL_Texture **texture, char *img_src);
 
-/* clear_wndw - wypełnia całą powierzchnię okna kolorem czarnym
+/* clear_wndw - wypełnia całą powierzchnię okna kolorem tła
  *
  * Argumenty:
  *   - SDL_Renderer* rndrr: wskaźnik na renderer do wykorzystania przy
  *   czyszczeniu
  */
-void clear_wndw(SDL_Renderer* rndrr);
+void clear_wndw(SDL_Renderer *rndrr);
 
 /* draw_maze - wyświetla labirynt w oknie. Wyświetla jedynie komórki dodane do
  * labiryntu w procesie jego generowania
@@ -79,20 +92,16 @@ void clear_wndw(SDL_Renderer* rndrr);
  *   labiryntu
  *   - struct maze maze: labirynt do wyświetlenia
  */
-void draw_maze(SDL_Renderer* rndrr, SDL_Texture* tileset, struct maze maze);
+void draw_maze(SDL_Renderer *rndrr, SDL_Texture *tileset, struct maze maze);
 
-/* draw_cell - koloruje pojedynczą komórkę na podany kolor. Możliwe kolory:
- *   - "black" - czarny (domyślny)
- *   - "grey" - szary
- * W przypadku podania innego koloru funkcja wykorzysta kolor domyślny
+/* draw_cell - koloruje pojedynczą komórkę kolorem renderowania
  *
  * Argumenty:
  *   - SDL_Renderer* rndrr: wskaźnik na wykorzystywany renderer
  *   - struct maze maze: labirynt w którym zostanie pokolorowana komórka
  *   - int cid: id komórki do pokolorowania
- *   - char* colour: nowy kolor komórki
  */
-void draw_cell(SDL_Renderer* rndrr, struct maze maze, int cid, char* colour);
+void draw_cell(SDL_Renderer *rndrr, struct maze maze, int cid);
 
 /* userexit - sprawdza czy użytkownik chce wyjść z programu. Funkcja sprawdza
  * czy użytkownik poprosił system operacyjny o wyjście lub nacisnął jeden z
@@ -103,5 +112,43 @@ void draw_cell(SDL_Renderer* rndrr, struct maze maze, int cid, char* colour);
  *   - 1 jeśli użytkownik poprosił o wyjście z programu
  */
 int userexit();
+
+/* get_con_rect - wytwarza obiekt `SDL_Rect`, który wyświetlony na labiryncie
+ * połączy środek komórki pierwszej z drugą. Szerokość połączenia zależy od
+ * `LINE_SIZE` oraz `TILE_SIZE`.
+ *
+ * Argumenty:
+ *   - int cid1: pierwsza komórka do połączenia
+ *   - int cid2: druga komórka do połączenia
+ *   - struct maze maze: labirynt w którym zachodzi połączenie
+ *
+ * Zwraca SDL_Rect:
+ *   - obiekt typu prostokąt biblioteki SDL
+ */
+SDL_Rect get_con_rect(int cid1, int cid2, struct maze maze);
+
+/* draw_visited - zaznacza ścieżki odwiedzone przez algorytm rozwiązywania
+ * labiryntu
+ *
+ * Argumenty:
+ *   - SDL_Renderer* rndrr: wskaźnik na renderer do wykorzystania
+ *   - struct maze maze: rozwiązywany labirynt
+ *   - struct adj* adjlist: lista sąsiedztwa w której zapisywane są odwiedzenia
+ */
+void draw_visited(SDL_Renderer *rndrr, struct maze maze, struct adj *adjlist);
+
+/* draw_solution - zaznacza końcowe rozwiązanie algorytmu, wykorzystując pole
+ * `parent` elementów listy sąsiedztwa wypełnionych przez algorytm rozwiązywania
+ * labiryntu
+ *
+ * Argumenty:
+ *   - SDL_Renderer* rndrr: wskaźnik na renderer do wykorzystania
+ *   - struct maze maze: rozwiązywany labirynt
+ *   - struct adj* adjlist: lista sąsiedztwa z rozwiązaniem w postaci
+ *   wypełnionych pół `parent` elementów
+ *   - int endcid: id komórki będącej końcem rozwiązania (wyjściem z labiryntu)
+ * */
+void draw_solution(SDL_Renderer *rndrr, struct maze maze, struct adj *adjlist,
+                   int endcid);
 
 #endif
