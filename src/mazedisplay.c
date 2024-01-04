@@ -146,6 +146,20 @@ void draw_visited(SDL_Renderer* rndrr, struct maze maze, struct adj* adjlist) {
     }
 }
 
+void draw_until(SDL_Renderer* rndrr, struct maze maze, struct adj* adjlist, int until) {
+    SDL_SetRenderDrawColor(rndrr, COLOUR_CURRENT_SOLVING_PATH);
+    struct adj cell;
+
+    const SDL_Rect r = get_con_rect(until + maze.size, until, maze);
+    SDL_RenderFillRect(rndrr, &r);
+
+    do {
+        cell = adjlist[until];
+        const SDL_Rect r = get_con_rect(until, cell.parent, maze);
+        SDL_RenderFillRect(rndrr, &r);
+    } while ((until = cell.parent) >= 0);
+}
+
 void draw_solution(SDL_Renderer* rndrr,
                    struct maze maze,
                    struct adj* adjlist,

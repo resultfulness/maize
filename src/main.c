@@ -227,8 +227,9 @@ int main(int argc, char** argv) {
         clear_wndw(rndrr);
         draw_maze(rndrr, tileset, *maze);
         draw_visited(rndrr, *maze, adjlist);
+        draw_until(rndrr, *maze, adjlist, cid);
         SDL_RenderPresent(rndrr);
-        SDL_Delay(DRAW_DELAY * !skip_gen);
+        SDL_Delay(DRAW_DELAY);
         if (userexit())
             goto out_free_queue;
     }

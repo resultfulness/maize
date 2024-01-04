@@ -31,10 +31,12 @@
 #define RGBA_BLACK 0, 0, 0, 255
 #define RGBA_ORANGERED 255, 69, 0, 255
 #define RGBA_FORESTGREEN 34, 139, 34, 255
+#define RGBA_PUREBLUE 0, 186, 255, 255
 
 #define COLOUR_BACKGROUND RGBA_BLACK
 #define COLOUR_GENERATION_PATH RGBA_DIMGREY
 #define COLOUR_SOLVING_PATH RGBA_ORANGERED
+#define COLOUR_CURRENT_SOLVING_PATH RGBA_PUREBLUE
 #define COLOUR_FINAL_SOLUTION RGBA_FORESTGREEN
 
 /* init_SDL - inicjalizuje okno biblioteki SDL o rozmiarze na podstawie rozmiaru
@@ -136,6 +138,20 @@ SDL_Rect get_con_rect(int cid1, int cid2, struct maze maze);
  *   - struct adj* adjlist: lista sąsiedztwa w której zapisywane są odwiedzenia
  */
 void draw_visited(SDL_Renderer *rndrr, struct maze maze, struct adj *adjlist);
+
+/* draw_until - zaznacza ścieżkę do komórki ze startu labiryntu, pozwalając
+ * na wyświetlanie obecnie analizowanej przez algorytm ścieżki
+ *
+ * Argumenty:
+ *   - SDL_Renderer* rndrr: wskaźnik na renderer do wykorzystania
+ *   - struct maze maze: rozwiązywany labirynt
+ *   - struct adj* adjlist: lista sąsiedztwa w której zapisywane są odwiedzenia
+ *   - int until: do której komórki wyświetlana jest ścieżka
+ */
+void draw_until(SDL_Renderer* rndrr,
+                struct maze maze,
+                struct adj* adjlist,
+                int until);
 
 /* draw_solution - zaznacza końcowe rozwiązanie algorytmu, wykorzystując pole
  * `parent` elementów listy sąsiedztwa wypełnionych przez algorytm rozwiązywania
