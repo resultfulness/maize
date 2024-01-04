@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "mazesolve.h"
@@ -18,6 +19,7 @@ int adjlist_init(struct adj* adjlist, struct maze* maze) {
         adjs = maze->cells[cid].adjacents;
         len = count_b1s(adjs);
 
+        adjlist[cid].value = ((double) rand() * 10 / RAND_MAX);
         adjlist[cid].visited = false;
         adjlist[cid].parent = -1;
         adjlist[cid].length = len;
@@ -42,6 +44,7 @@ int bfs_visit_adj(int cid, struct queue* queue, struct adj* adjlist) {
     for (int i = 0; i < adjlist[cid].length; i++) {
         int adjcid = adjlist[cid].cell_ids[i];
         if (!adjlist[adjcid].visited) {
+            printf(" * %d\t(%.2lf)\n", adjcid, adjlist[adjcid].value);
             adjlist[adjcid].visited = true;
             adjlist[adjcid].parent = cid;
             if (queue_enqueue(queue, adjcid) != 0)

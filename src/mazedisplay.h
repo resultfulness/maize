@@ -151,4 +151,14 @@ void draw_visited(SDL_Renderer *rndrr, struct maze maze, struct adj *adjlist);
 void draw_solution(SDL_Renderer *rndrr, struct maze maze, struct adj *adjlist,
                    int endcid);
 
+/* print_path - drukuje ścieżkę zapisaną w liście sąsiedztwa od pierwszej
+ * komórki do drugiej oraz jej długość
+ *
+ * Argumenty:
+ *   - int startcid: pierwsza komórka
+ *   - int endcid: druga komórka
+ *   - struct adj* adjlist: lista sąsiedztwa, w której zapisana jest ścieżka
+ */
+void print_path(int startcid, int endcid, struct adj* adjlist);
+
 #endif

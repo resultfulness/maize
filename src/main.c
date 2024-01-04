@@ -110,6 +110,7 @@ int main(int argc, char** argv) {
     }
 
     /* algorytm generowania labiryntu */
+    printf("%s: labirynt jest generowany...\n", argv[0]);
     while (are_all_cells_filled(*maze)) {
         if (!skip_gen) {
             clear_wndw(rndrr);
@@ -190,7 +191,14 @@ int main(int argc, char** argv) {
     int endcid = maze->ccnt - rand() % maze->size - 1;
     cells[endcid].adjacents += S;
 
+    printf("%s: labirynt wygenerowany pomyślnie\n", argv[0]);
+    printf("%s: id komórki startowej: %i; końcowej: %i\n",
+           argv[0],
+           startcid,
+           endcid);
+
     /* rozwiązywanie labiryntu algorytmem BFS */
+    printf("%s: labirynt jest rozwiązywany...\n", argv[0]);
     struct queue* queue = malloc(sizeof(struct queue));
     if (queue == NULL) {
         fprintf(stderr, "%s: nie udało się alokować pamięci\n", argv[0]);
@@ -208,6 +216,7 @@ int main(int argc, char** argv) {
         goto out_free_queue;
     }
 
+    printf("%s: algorytm odwiedza komórki [ id(wartość) ]:\n", argv[0]);
     while ((cid = queue_dequeue(queue)) != -1) {
         if (cid == endcid)
             break;
@@ -219,18 +228,22 @@ int main(int argc, char** argv) {
         draw_maze(rndrr, tileset, *maze);
         draw_visited(rndrr, *maze, adjlist);
         SDL_RenderPresent(rndrr);
-        SDL_Delay(DRAW_DELAY);
+        SDL_Delay(DRAW_DELAY * !skip_gen);
         if (userexit())
             goto out_free_queue;
     }
 
+    printf("%s: znaleziono rozwiązanie, ścieżka:\n", argv[0]);
+    fputs(" * ", stdout);
+    print_path(startcid, endcid, adjlist);
+
+    printf("\n%s: oczekiwanie na wyjście z programu...\n", argv[0]);
     /* wyświetlanie końcowe */
     while (!userexit()) {
         clear_wndw(rndrr);
         draw_maze(rndrr, tileset, *maze);
         draw_solution(rndrr, *maze, adjlist, endcid);
         SDL_RenderPresent(rndrr);
-        SDL_Delay(DRAW_DELAY);
     }
 
 out_free_queue:

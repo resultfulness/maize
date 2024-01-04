@@ -10,7 +10,8 @@ Generuje losowy labirynt o wymiarach ROZMIAR na ROZMIAR.\n\
 Z programu można wyjść w każdej chwili wciskając klawisz <ESC> lub Q.\n\
 \n\
 Możliwe OPCJE:\n\
-  -s    nie wyświetlaj fazy generowania labiryntu (polecane dla ROZMIAR > 10,\n\
-        w przeciwnym razie labirynt może generować się BARDZO długo).\n\
+  -s    wyświetlaj rozwiązywanie labiryntu tak szybko jak to możliwe (odstęp\n\
+        między klatkami = 0) i pomiń wyświetlanie generowania labiryntu:\n\
+        polecane jeśli ROZMIAR > 10\n\
 ", stdout);
 }

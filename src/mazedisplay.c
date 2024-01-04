@@ -162,3 +162,17 @@ void draw_solution(SDL_Renderer* rndrr,
         SDL_RenderFillRect(rndrr, &r);
     } while ((endcid = cell.parent) >= 0);
 }
+
+void print_path(int startcid, int endcid, struct adj* adjlist) {
+    double s = 0.;
+    struct adj cell;
+
+    do {
+        printf("%i <- ", endcid);
+        cell = adjlist[endcid];
+        s += cell.value;
+    } while ((endcid = cell.parent) != startcid);
+    printf("%i\n", startcid);
+    s += adjlist[startcid].value;
+    printf(" * długość ścieżki: %.2lf\n", s);
+}

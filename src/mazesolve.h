@@ -15,12 +15,14 @@
  *   labiryntu
  *   - bool visited: czy dana komórka została już rozpatrzona przez algorytm
  *   rozwiązywania labiryntu
+ *   - double value: wartość komórki
  */
 struct adj {
     int* cell_ids;
     int length;
     int parent;
     bool visited;
+    double value;
 };
 
 /* count_b1s - zlicza jedynki występujące w reprezentacji binarnej liczby,
