@@ -6,13 +6,13 @@
 #include <string.h>
 #include <time.h>
 
+#include "datastructures/pathstack.h"
+#include "datastructures/queue.h"
 #include "help.h"
 #include "maze.h"
 #include "mazedisplay.h"
 #include "mazegen.h"
 #include "mazesolve.h"
-#include "pathstack.h"
-#include "queue.h"
 
 int main(int argc, char** argv) {
     int result = 0;

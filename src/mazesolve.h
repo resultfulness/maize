@@ -1,10 +1,9 @@
 #ifndef _MAZESOLVE_H
 #define _MAZESOLVE_H
 
+#include "datastructures/queue.h"
 #include "maze.h"
 #include "mazegen.h"
-#include "pathstack.h"
-#include "queue.h"
 
 /* struct adj - reprezentuje pojedynczy element (komórkę) listy sąsiedztwa
  *

@@ -6,7 +6,7 @@ LDLIBS = -lSDL2 -lSDL2_image
 SRCDIR   = ./src
 BUILDDIR = ./build
 
-OBJECTS = $(patsubst %.c,%.o,$(wildcard $(SRCDIR)/*.c))
+OBJECTS = $(patsubst %.c,%.o,$(shell find $(SRCDIR) -type f -name '*.c'))
 
 all: $(PROJECT)
 

@@ -1,8 +1,8 @@
 #ifndef _MAZEGEN_H
 #define _MAZEGEN_H
 
+#include "datastructures/pathstack.h"
 #include "maze.h"
-#include "pathstack.h"
 
 /* enum direction - reprezentuje kierunki wykorzystywane podczas generowania
  * labiryntu
