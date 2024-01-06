@@ -11,7 +11,7 @@ OBJECTS = $(patsubst %.c,%.o,$(shell find $(SRCDIR) -type f -name '*.c'))
 all: $(PROJECT)
 
 $(PROJECT): dir $(OBJECTS)
-	$(CC) $(CFLAGS) $(LDLIBS) -o $@ $(patsubst %,build/%,$(OBJECTS))
+	$(CC) $(CFLAGS) -o $@ $(patsubst %,build/%,$(OBJECTS)) $(LDLIBS)
 
 $(OBJECTS): dir
 	@mkdir -p $(BUILDDIR)/$(@D)
